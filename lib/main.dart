@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Excuses App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -41,6 +42,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _veriGetir() async {
     //daha detayli kullanim icin https://excuser.herokuapp.com/
 
+    _translatedString = '';
+    _excuses = [];
+    setState(() {});
+
     final answer = await get(Uri(
       host: 'excuser.herokuapp.com',
       scheme: 'https',
@@ -62,50 +67,61 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        actions: [
+          IconButton(onPressed: _veriGetir, icon: const Icon(Icons.refresh))
+        ],
+        backgroundColor: Colors.black,
         title: Text(widget.title),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: ListView(
-          children: <Widget>[
-            for (final excuse in _excuses)
-              Card(
-                elevation: 10,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Category: ${excuse['category']}".toUpperCase()),
-                      const SizedBox(
-                        height: 20,
+      body: _excuses.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: ListView(
+                children: <Widget>[
+                  for (final excuse in _excuses)
+                    Card(
+                      elevation: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Category: ${excuse['category']}"
+                                .toUpperCase()),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Text(
+                              excuse['excuse']!,
+                              style: Theme.of(context).textTheme.headline5,
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(
-                        excuse['excuse']!,
-                        style: Theme.of(context).textTheme.headline5,
-                      ),
-                    ],
+                    ),
+                  const SizedBox(
+                    height: 50,
                   ),
-                ),
+                  if (_translatedString.isNotEmpty)
+                    Card(
+                      elevation: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          _translatedString,
+                          style: Theme.of(context).textTheme.headline5,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-            SizedBox(
-              height: 50,
             ),
-            const Text('CEVIRI'),
-            if (_translatedString.isNotEmpty)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    _translatedString,
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_excuses != null) {
