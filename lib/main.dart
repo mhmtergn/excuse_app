@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:translator/translator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +34,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map> _excuses = [];
 
+  final translator = GoogleTranslator();
+
+  String _translatedString = '';
+
   Future<void> _veriGetir() async {
     //daha detayli kullanim icin https://excuser.herokuapp.com/
 
@@ -60,40 +65,59 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              for (final excuse in _excuses)
-                Card(
-                  elevation: 10,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Category: ${excuse['category']}".toUpperCase()),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          excuse['excuse']!,
-                          style: Theme.of(context).textTheme.headline5,
-                        ),
-                      ],
-                    ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ListView(
+          children: <Widget>[
+            for (final excuse in _excuses)
+              Card(
+                elevation: 10,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Category: ${excuse['category']}".toUpperCase()),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Text(
+                        excuse['excuse']!,
+                        style: Theme.of(context).textTheme.headline5,
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ),
+              ),
+            SizedBox(
+              height: 50,
+            ),
+            const Text('CEVIRI'),
+            if (_translatedString.isNotEmpty)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(
+                    _translatedString,
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () {
+          if (_excuses != null) {
+            final excuse = _excuses.first;
+            translator.translate(excuse['excuse'], to: 'tr').then((translate) {
+              _translatedString = translate.text;
+              setState(() {});
+            });
+          }
+        },
+        tooltip: 'Translate',
+        child: const Icon(Icons.translate),
       ),
     );
   }
